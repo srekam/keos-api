@@ -26,11 +26,70 @@ const PORT = process.env.PORT || 3000;
 // Security middleware
 app.use(helmet());
 
-// CORS configuration
+// CORS configuration for mobile apps and web clients
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://10.5.50.48:3000', 'http://10.5.50.48:38006'],
-    credentials: true
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or Postman)
+        if (!origin) return callback(null, true);
+        
+        // Allow specific origins
+        const allowedOrigins = [
+            'http://localhost:3000',
+            'http://localhost:3001',
+            'http://10.5.50.48:3000',
+            'http://10.5.50.48:3001',
+            'http://10.5.50.48:38003',
+            'http://10.5.50.48:38006',
+            'http://10.5.50.48:38004',
+            'http://10.5.50.48:38005',
+            // Add your mobile app origins here
+            'capacitor://localhost',
+            'ionic://localhost',
+            'file://',
+            // Allow all origins in development
+            ...(process.env.NODE_ENV === 'development' ? ['*'] : [])
+        ];
+        
+        if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            console.log(`🚫 CORS blocked origin: ${origin}`);
+            callback(null, false);
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: [
+        'Origin',
+        'X-Requested-With',
+        'Content-Type',
+        'Accept',
+        'Authorization',
+        'X-Admin-ID',
+        'X-API-Key'
+    ],
+    exposedHeaders: ['X-Total-Count', 'X-Page-Count'],
+    maxAge: 86400 // 24 hours
 }));
+
+// Handle preflight requests for mobile apps
+app.options('*', cors());
+
+// Add CORS headers to all responses
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Admin-ID, X-API-Key');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Max-Age', '86400');
+    
+    // Handle preflight
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+    } else {
+        next();
+    }
+});
 
 // Rate limiting
 const limiter = rateLimit({
@@ -53,6 +112,30 @@ app.get('/health', (req, res) => {
         timestamp: new Date().toISOString(),
         mariadb: db.isConnected() ? 'connected' : 'disconnected',
         mongodb: mongodb.isMongoDBConnected() ? 'connected' : 'disconnected'
+    });
+});
+
+// CORS test endpoint for mobile apps
+app.get('/cors-test', (req, res) => {
+    res.json({
+        message: 'CORS is working!',
+        timestamp: new Date().toISOString(),
+        origin: req.headers.origin || 'No origin header',
+        userAgent: req.headers['user-agent'] || 'No user agent',
+        cors: {
+            allowedOrigins: [
+                'http://localhost:3000',
+                'http://localhost:3001',
+                'http://10.5.50.48:3000',
+                'http://10.5.50.48:3001',
+                'http://10.5.50.48:38003',
+                'capacitor://localhost',
+                'ionic://localhost',
+                'file://'
+            ],
+            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+            credentials: true
+        }
     });
 });
 
