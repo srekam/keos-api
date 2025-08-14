@@ -1,0 +1,49 @@
+{
+  "mqtt": {
+    "host": "10.5.50.48",
+    "port": 1883,
+    "username": "mqtt",
+    "password": "mqtt",
+    "clientId": "keos-api",
+    "clean": true,
+    "reconnectPeriod": 1000,
+    "connectTimeout": 30000,
+    "rejectUnauthorized": false
+  },
+  "topics": {
+    "prefix": "hotel",
+    "device": {
+      "command": "{site_id}/device/{device_id}/command",
+      "status": "{site_id}/device/{device_id}/status"
+    },
+    "wifi": {
+      "config": "{site_id}/wifi/{room}/config"
+    },
+    "notification": {
+      "system": "{site_id}/notification/{target}",
+      "guest": "{site_id}/guest/{action}"
+    },
+    "room": {
+      "status": "{site_id}/room/{room}/status"
+    },
+    "order": {
+      "notification": "{site_id}/order/{order_id}"
+    },
+    "test": {
+      "connection": "test/connection",
+      "general": "test"
+    }
+  },
+  "qos": {
+    "default": 0,
+    "device_commands": 1,
+    "notifications": 1,
+    "config": 1,
+    "status": 1
+  },
+  "retain": {
+    "default": false,
+    "config": true,
+    "status": true
+  }
+} 
