@@ -32,29 +32,26 @@ app.use(cors({
         // Allow requests with no origin (like mobile apps or Postman)
         if (!origin) return callback(null, true);
         
-        // Allow specific origins
+        // Allow specific origins - only hotel network and mobile apps
         const allowedOrigins = [
-            'http://localhost:3000',
-            'http://localhost:3001',
+            // Hotel network only (10.5.50.48)
             'http://10.5.50.48:3000',
             'http://10.5.50.48:3001',
             'http://10.5.50.48:38003',
             'http://10.5.50.48:38006',
             'http://10.5.50.48:38004',
             'http://10.5.50.48:38005',
-            // Add your mobile app origins here
+            // Mobile app origins
             'capacitor://localhost',
             'ionic://localhost',
-            'file://',
-            // Allow all origins in development
-            ...(process.env.NODE_ENV === 'development' ? ['*'] : [])
+            'file://'
         ];
         
-        if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+        if (allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
             console.log(`🚫 CORS blocked origin: ${origin}`);
-            callback(null, false);
+            callback(new Error(`Origin ${origin} not allowed`), false);
         }
     },
     credentials: true,
@@ -77,7 +74,25 @@ app.options('*', cors());
 
 // Add CORS headers to all responses
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    const origin = req.headers.origin;
+    
+    // Only allow specific origins
+    const allowedOrigins = [
+        'http://10.5.50.48:3000',
+        'http://10.5.50.48:3001',
+        'http://10.5.50.48:38003',
+        'http://10.5.50.48:38006',
+        'http://10.5.50.48:38004',
+        'http://10.5.50.48:38005'
+    ];
+    
+    if (origin && allowedOrigins.includes(origin)) {
+        res.header('Access-Control-Allow-Origin', origin);
+    } else if (!origin) {
+        // Allow requests with no origin (mobile apps)
+        res.header('Access-Control-Allow-Origin', '*');
+    }
+    
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Admin-ID, X-API-Key');
     res.header('Access-Control-Allow-Credentials', 'true');
@@ -124,11 +139,12 @@ app.get('/cors-test', (req, res) => {
         userAgent: req.headers['user-agent'] || 'No user agent',
         cors: {
             allowedOrigins: [
-                'http://localhost:3000',
-                'http://localhost:3001',
                 'http://10.5.50.48:3000',
                 'http://10.5.50.48:3001',
                 'http://10.5.50.48:38003',
+                'http://10.5.50.48:38006',
+                'http://10.5.50.48:38004',
+                'http://10.5.50.48:38005',
                 'capacitor://localhost',
                 'ionic://localhost',
                 'file://'
