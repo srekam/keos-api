@@ -98,6 +98,12 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Logging middleware
 app.use(morgan('combined'));
 
+// Debug middleware to log all requests
+app.use((req, res, next) => {
+    console.log(`🔍 Request: ${req.method} ${req.url} from ${req.ip} (${req.headers['user-agent'] || 'No User-Agent'})`);
+    next();
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
     res.json({ 

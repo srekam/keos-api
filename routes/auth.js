@@ -11,6 +11,20 @@ const validateLogin = [
     body('password').isLength({ min: 1 })
 ];
 
+// GET /api/auth/login - Show login status
+router.get('/login', (req, res) => {
+    res.json({
+        message: 'Login endpoint - use POST method',
+        method: 'POST',
+        endpoint: '/api/auth/login',
+        example: {
+            email: 'test@api.com',
+            password: 'test123'
+        },
+        note: 'Send POST request with email and password in JSON body'
+    });
+});
+
 // POST /api/auth/login
 router.post('/login', validateLogin, async (req, res) => {
     try {
