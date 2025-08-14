@@ -11,6 +11,8 @@ A comprehensive Node.js API for hotel management systems with MongoDB integratio
 - **📊 Advanced Logging**: Device logs, system logs, performance analytics
 - **🔄 Database Migrations**: Automated database schema management
 - **🌐 RESTful API**: Clean, documented endpoints for all operations
+- **📱 Mobile App Support**: Comprehensive CORS configuration for mobile apps
+- **🔒 Security Features**: Helmet security, rate limiting, input validation
 
 ## 🏗️ Architecture
 
@@ -67,6 +69,20 @@ keos-api/
 - MongoDB (optional, for enhanced features)
 - EMQX MQTT Broker
 
+### Quick Start for Mobile Developers
+```bash
+# Test API connectivity
+curl http://10.5.50.48:3001/health
+
+# Test CORS support
+curl http://10.5.50.48:3001/cors-test
+
+# Test login with test credentials
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"email":"test@api.com","password":"test123"}' \
+  http://10.5.50.48:3001/api/auth/login
+```
+
 ### Setup
 ```bash
 # Clone repository
@@ -88,6 +104,34 @@ npm start
 ```
 
 ## 🔧 Configuration
+
+### CORS Configuration
+The API includes comprehensive CORS support for mobile apps and web clients:
+
+#### **Supported Origins:**
+- **Local Development**: `http://localhost:3000`, `http://localhost:3001`
+- **Hotel Network**: `http://10.5.50.48:3000`, `http://10.5.50.48:3001`
+- **Hotel Services**: `http://10.5.50.48:38003`, `http://10.5.50.48:38006`
+- **Mobile Apps**: `capacitor://localhost`, `ionic://localhost`, `file://`
+- **Development Mode**: All origins allowed when `NODE_ENV=development`
+
+#### **CORS Features:**
+- **Preflight Support**: Automatic OPTIONS request handling
+- **Credential Support**: Cookies and authentication headers
+- **Flexible Methods**: GET, POST, PUT, DELETE, OPTIONS, PATCH
+- **Custom Headers**: X-Admin-ID, X-API-Key, Authorization
+- **Cache Control**: 24-hour preflight response caching
+
+#### **Test CORS:**
+```bash
+# Test CORS endpoint
+curl http://10.5.50.48:3001/cors-test
+
+# Test preflight request
+curl -X OPTIONS -H "Origin: http://localhost:3000" \
+  -H "Access-Control-Request-Method: POST" \
+  http://10.5.50.48:3001/api/auth/login
+```
 
 ### Environment Variables
 ```bash
@@ -340,15 +384,32 @@ Response:
 
 ## 📱 Client Integration
 
-### Android Staff App
+### Mobile App Support
+The API is fully optimized for mobile applications with comprehensive CORS support:
+
+#### **Android Staff App**
 - Real-time job notifications via MQTT
 - Hotel data synchronization via HTTP API
 - Offline capability with local caching
+- **CORS Ready**: No additional configuration needed
 
-### Flutter TV App
+#### **Flutter TV App**
 - Guest services and room control
 - IoT device management via MQTT
 - WiFi configuration and QR codes
+- **CORS Ready**: Works with all Flutter HTTP clients
+
+#### **React Native Apps**
+- Cross-platform hotel management
+- Real-time updates via MQTT
+- Secure authentication via JWT
+- **CORS Ready**: Native fetch API support
+
+#### **Capacitor/Ionic Apps**
+- Hybrid mobile applications
+- Hotel system integration
+- Offline-first architecture
+- **CORS Ready**: Native mobile CORS support
 
 ### Background Services
 - System monitoring and maintenance
@@ -362,6 +423,7 @@ Response:
 2. **MongoDB Connection Issues**: Verify MongoDB container is running
 3. **MQTT Connection Problems**: Check EMQX broker status
 4. **Authentication Failures**: Verify JWT secret configuration
+5. **CORS Issues**: Check origin headers and preflight requests
 
 ### Debug Commands
 ```bash
@@ -379,6 +441,20 @@ docker exec mongodb mongosh hotel_utility --eval "db.getCollectionNames()"
 
 # Test MQTT
 mosquitto_pub -h 10.5.50.48 -p 1883 -t "test" -m "Hello"
+
+# Test CORS configuration
+curl -v http://10.5.50.48:3001/cors-test
+
+# Test CORS preflight
+curl -v -X OPTIONS -H "Origin: http://localhost:3000" \
+  -H "Access-Control-Request-Method: POST" \
+  http://10.5.50.48:3001/api/auth/login
+
+# Test mobile app login
+curl -X POST -H "Content-Type: application/json" \
+  -H "Origin: capacitor://localhost" \
+  -d '{"email":"test@api.com","password":"test123"}' \
+  http://10.5.50.48:3001/api/auth/login
 ```
 
 ## 📈 Performance & Scaling
@@ -411,6 +487,6 @@ For support and questions:
 ---
 
 **Last Updated**: 2025-08-14  
-**Version**: 1.0.0  
-**Status**: Production Ready  
-**Architecture**: Node.js + MariaDB + MongoDB + MQTT
+**Version**: 1.1.0  
+**Status**: Production Ready + Mobile App CORS Support  
+**Architecture**: Node.js + MariaDB + MongoDB + MQTT + CORS
